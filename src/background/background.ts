@@ -39,7 +39,7 @@ const handleSubmit = async (message: Submit, sender: any, sendResponse: any) => 
         return;
     }
 
-
+    await instance.submitCode(newTab.id, message.code, message.language);
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
