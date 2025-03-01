@@ -6,8 +6,15 @@
   "action": {
     "default_popup": "popup.html"
   },
-  "permissions": [],
+  "permissions": [
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.acmicpc.net/*"
+  ],
   "background": {
     "service_worker": "background.js"
+    
   }
 } 
