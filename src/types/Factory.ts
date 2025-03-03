@@ -3,7 +3,6 @@ type JudgeProgress = {
   progress: number;
   memory?: string;
   time?: string;
-  code?: string;
   isComplete: boolean;
 };
 

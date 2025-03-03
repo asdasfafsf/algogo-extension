@@ -22,7 +22,6 @@ export const BOJ = {
     submitCode: async (tabId: number, code: string, language: Language) => { 
         return new Promise(async (resolve, reject) => {
             try {
-                // 페이지 요소가 모두 로드될 때까지 반복 확인
                 const maxAttempts = 10; // 최대 시도 횟수
                 const checkInterval = 1000; // 확인 간격 (1초)
                 let attempts = 0;
@@ -145,9 +144,6 @@ export const BOJ = {
                                 progress: 100,
                                 memory: document.querySelector('table.table td.memory')?.textContent?.trim(),
                                 time: document.querySelector('table.table td.time')?.textContent?.trim(),
-                                code: document.querySelector('table.table td.result')?.className?.includes('result-ac') 
-                                    ? 'SUCCESS' 
-                                    : 'FAIL',
                                 isComplete: true
                             };
                         }
@@ -155,6 +151,8 @@ export const BOJ = {
                         return {
                             status: statusText,
                             progress: progress,
+                            memory: 0,
+                            time: 0,
                             isComplete: false
                         };
                     },
