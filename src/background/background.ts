@@ -123,12 +123,25 @@ const handleSubmit = async (message: { data: Submit }, sender: any, sendResponse
         });
         
     } catch (error) {
-        sendResponse({ code: "9003", message: "탭이 닫혔습니다.", result: null });
+        console.error("Error:", error);
+        if (error instanceof Error) {
+            if (error.message === "탭이 닫혔습니다.") {
+                sendResponse({ code: "9004", message: "탭이 닫혔습니다.", result: null });
+            } else {
+                sendResponse({ code: "9999", message: `오류 발생: ${error.message}`, result: null });
+            }
+        } else {
+            sendResponse({ code: "9999", message: "알 수 없는 오류 발생", result: null });
+        }
         return;
     } finally {
-        if (newTab.id && tabCloseListeners.has(newTab.id)) {
-            chrome.tabs.onRemoved.removeListener(tabCloseListeners.get(newTab.id)!);
-            tabCloseListeners.delete(newTab.id);
+        if (newTab.id) {
+            if (tabCloseListeners.has(newTab.id)) {
+                chrome.tabs.onRemoved.removeListener(tabCloseListeners.get(newTab.id)!);
+                tabCloseListeners.delete(newTab.id);
+            }
+            // 포트 연결도 정리
+            portConnections.delete(newTab.id);
         }
     }
 };
