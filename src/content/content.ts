@@ -24,6 +24,13 @@ function main() {
                 const isSubmit = contentInstance.submit(data);
                 sendResponse(isSubmit);
                 break;
+            case 'RESULT':
+                const resultTypedMessage = message as Message<typeof MessageType.RESULT>;
+                const resultData = resultTypedMessage.data;
+                const resultContentInstance = getContentInstance(resultData.source);
+                const isResult = resultContentInstance.isResultPage();
+                sendResponse(isResult);
+                break;
         }
         
         return true; 

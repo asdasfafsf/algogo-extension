@@ -165,8 +165,24 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             type: 'SUBMIT',
             data,
         });
+        
+        if (!submitResult) {
+            return false;
+        }
 
-        console.log('로그인이 되어 있음');
+        const result = await waitUntil<keyof typeof MessageType, boolean>(tab.id, {
+            type: 'RESULT',
+            data,
+        }, (result) => result, {
+            timeout: 30000,
+        });     
+        
+
+        if (!result) {
+            return false;
+        }
+        
+        console.log('제출 페이지')
     }
 });
 
