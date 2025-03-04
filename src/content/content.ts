@@ -11,11 +11,18 @@ function main() {
         
         switch (message.type) {
             case 'CHECK_LOGIN':
-                const typedMessage = message as Message<typeof MessageType.CHECK_LOGIN>;
+                const loginTypedMessage = message as Message<typeof MessageType.CHECK_LOGIN>;
+                const loginData = loginTypedMessage.data;
+                const loginContentInstance = getContentInstance(loginData.source);
+                const isLogin = loginContentInstance.checkLoginStatus();
+                sendResponse(isLogin);
+                break;
+            case 'SUBMIT':
+                const typedMessage = message as Message<typeof MessageType.SUBMIT>;
                 const data = typedMessage.data;
                 const contentInstance = getContentInstance(data.source);
-                const isLogin = contentInstance.checkLoginStatus();
-                sendResponse(isLogin);
+                const isSubmit = contentInstance.submit(data);
+                sendResponse(isSubmit);
                 break;
         }
         
