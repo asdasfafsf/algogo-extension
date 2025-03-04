@@ -15,6 +15,12 @@
   ],
   "background": {
     "service_worker": "background.js"
-    
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.acmicpc.net/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ]
 } 

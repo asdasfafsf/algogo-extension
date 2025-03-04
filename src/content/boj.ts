@@ -44,10 +44,13 @@ export const BOJ = {
             return false;
         }
     },
-    
+
     // 로그인 상태 확인
     checkLoginStatus: (): boolean => {
-        return !!document.querySelector('a[onclick*="logout_form"]');
+        // 로그인 폼의 아이디 입력 필드가 있으면 로그아웃 상태
+        const loginInput = document.querySelector('input[name="login_user_id"]');
+        console.log('loginInput', !loginInput);
+        return !loginInput; // 입력 필드가 없으면 로그인된 상태
     },
     
     // 채점 상태 모니터링 시작
