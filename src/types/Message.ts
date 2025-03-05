@@ -8,8 +8,8 @@ export interface MessagePayloadMap {
     [MessageType.CHECK_LOGIN]: {source: Source};
     [MessageType.RESULT]: {source: Source};
     [MessageType.EXECUTE]: Submit;
-    [MessageType.REQUEST_PROGRESS]: {tabId: Number};
-    [MessageType.RESPONSE_PROGRESS]: {tabId: Number};
+    [MessageType.REQUEST_PROGRESS]: {tabId: Number, source: Source};
+    [MessageType.RESPONSE_PROGRESS]: {tabId: Number, source: Source};
 }
 
 export type Message<T extends MessageType> = {
