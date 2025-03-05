@@ -28,6 +28,12 @@ function main() {
                 const isResult = resultContentInstance.isResultPage();
                 sendResponse(isResult);
                 break;
+            default:
+                sendResponse({
+                    code: '9000',
+                    message: '지원하지 않는 코드입니다.'
+                });
+                break;
         }
         
         return true; 

@@ -169,17 +169,16 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             }
 
             // 현재 탭 정보 저장
-            const currentTabs = await chrome.tabs.query({ active: true, currentWindow: true });
-            originalTab = currentTabs[0];
-
-            if (!originalTab?.id) {
+            const currentTabs = (await chrome.tabs.query({ active: true, currentWindow: true })).at(0);
+         
+            if (!currentTabs?.id) {
                 throw {
                     code: '9002',
                     message: '탭이 열리지 않았습니다.'
                 }
             }
 
-            originalTab = originalTab as chrome.tabs.Tab;
+            const originalTab = currentTabs as chrome.tabs.Tab;
 
             // 새 탭 열기
             const url = instance.getSubmitUrl(sourceId);
@@ -237,7 +236,6 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
                 return false;
             }
             
-            console.log('제출 페이지')
 
         }
     }catch (error:  any | {code: string, message: string}) {
