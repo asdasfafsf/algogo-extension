@@ -28,7 +28,13 @@ function main() {
                 const isResult = resultContentInstance.isResultPage();
                 sendResponse(isResult);
                 break;
+            case 'EXECUTE':
+                const executeTypedMessage = message as Message<typeof MessageType.EXECUTE>;
+                const isExecute = await chrome.runtime.sendMessage(executeTypedMessage);
+                sendResponse(isExecute);
+                break;
             default:
+                
                 sendResponse({
                     code: '9000',
                     message: '지원하지 않는 코드입니다.'

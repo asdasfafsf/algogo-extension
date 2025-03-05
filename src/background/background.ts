@@ -157,7 +157,7 @@ let originalTab: chrome.tabs.Tab | null = null;
 // 기존 로직은 그대로 두고
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     try {
-        if (message.type === 'SUBMIT') {
+        if (message.type === 'EXECUTE') {
             const { source, sourceId, code, language } = message.data;
             const instance = getInstance(source);
 
