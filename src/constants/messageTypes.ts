@@ -2,5 +2,6 @@ export const MessageType = {
     SUBMIT: 'SUBMIT',
     CHECK_LOGIN: 'CHECK_LOGIN',
     RESULT: 'RESULT',
-    EXECUTE: 'EXECUTE'
+    EXECUTE: 'EXECUTE',
+    PROGRESS: 'PROGRESS'
 } as const;
