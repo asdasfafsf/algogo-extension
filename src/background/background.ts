@@ -95,13 +95,52 @@ const waitUntil = async <T extends keyof typeof MessageType, R>(
             }
             await new Promise(resolve => setTimeout(resolve, interval));
         } catch (error) {
-            console.error('상태 체크 중 오류:', error);
             throw error;
         }
     }
     
-    throw new Error(timeoutMessage);
+    throw {
+        code: '9997',
+        message: timeoutMessage
+    };
 };
+
+
+// 이미 리스너가 등록된 탭 ID 집합
+const registeredTabIds = new Set<number>();
+
+/**
+ * 탭 닫힘을 감지하는 함수 (중복 등록 방지)
+ * @param tabId 감시할 탭 ID
+ */
+const waitForTabClose = (tabId: number): Promise<never> => {
+    // 이미 등록된 탭이면 기존 Promise 재사용
+    if (registeredTabIds.has(tabId)) {
+        return new Promise<never>((_, reject) => {
+            // 이미 리스너가 등록되어 있으므로 새로운 Promise만 반환
+            // 탭이 닫히면 기존 리스너에 의해 reject될 것임
+        });
+    }
+    
+    // 새로운 탭이면 리스너 등록
+    registeredTabIds.add(tabId);
+    
+    return new Promise<never>((_, reject) => {
+        const listener = (closedTabId: number) => {
+            if (closedTabId === tabId) {
+                chrome.tabs.onRemoved.removeListener(listener);
+                registeredTabIds.delete(tabId);
+                console.log('??????')
+                reject({
+                    code: '9998',
+                    message: '탭이 닫혔습니다.'
+                });
+            }
+        };
+        chrome.tabs.onRemoved.addListener(listener);
+    });
+};
+
 
 const checkLogin = async (tabId: number, data: {source: Source}) => {
     return await waitUntil<keyof typeof MessageType, boolean>(tabId, {
@@ -117,72 +156,107 @@ let originalTab: chrome.tabs.Tab | null = null;
 
 // 기존 로직은 그대로 두고
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
-    if (message.type === 'SUBMIT') {
-        const { source, sourceId, code, language } = message.data;
-        const instance = getInstance(source);
+    try {
+        if (message.type === 'SUBMIT') {
+            const { source, sourceId, code, language } = message.data;
+            const instance = getInstance(source);
 
-        if (!instance) {
-            return false;
-        }
-
-        // 현재 탭 정보 저장
-        const currentTabs = await chrome.tabs.query({ active: true, currentWindow: true });
-        originalTab = currentTabs[0];
-
-        if (!originalTab?.id) {
-            return false;
-        }
-
-        originalTab = originalTab as chrome.tabs.Tab;
-
-        // 새 탭 열기
-        const url = instance.getSubmitUrl(sourceId);
-        const tab = await createAndWaitForTab(url);
-
-        if (!tab.id) {
-            return false;
-        }
-
-        const data = message.data as Submit;
-        const isLogin = await sendMessageToTab<boolean>(tab.id, {
-            type: 'CHECK_LOGIN',
-            data: {source: data.source},
-        });
-
-        if (!isLogin) {
-            chrome.tabs.update(tab.id, {active: true});
-            const isLoggedIn = await checkLogin(tab.id, {source: data.source});
-
-            if (!isLoggedIn) {
-                console.log('로그인이 안되어 있음');
-                return false;
+            if (!instance) {
+                throw {
+                    code: '9001',
+                    message: '지원하지 않는 소스입니다.'
+                }
             }
 
-            chrome.tabs.update(originalTab.id!, {active: true});
-        }
+            // 현재 탭 정보 저장
+            const currentTabs = await chrome.tabs.query({ active: true, currentWindow: true });
+            originalTab = currentTabs[0];
 
-        const submitResult = await sendMessageToTab<any>(tab.id, {
-            type: 'SUBMIT',
-            data,
-        });
-        
-        if (!submitResult) {
-            return false;
-        }
+            if (!originalTab?.id) {
+                throw {
+                    code: '9002',
+                    message: '탭이 열리지 않았습니다.'
+                }
+            }
 
-        const result = await waitUntil<keyof typeof MessageType, boolean>(tab.id, {
-            type: 'RESULT',
-            data,
-        }, (result) => result, {
-            timeout: 30000,
-        });     
-        
+            originalTab = originalTab as chrome.tabs.Tab;
 
-        if (!result) {
-            return false;
+            // 새 탭 열기
+            const url = instance.getSubmitUrl(sourceId);
+            const tab = await createAndWaitForTab(url);
+
+            if (!tab.id) {
+                throw {
+                    code: '9003',
+                    message: '탭이 열리지 않았습니다.'
+                }
+            }
+
+            const data = message.data as Submit;
+            const isLogin = await Promise.race([sendMessageToTab<boolean>(tab.id, {
+                type: 'CHECK_LOGIN',
+                data: {source},
+            }), waitForTabClose(tab.id)]);
+            
+
+            if (!isLogin) {
+                chrome.tabs.update(tab.id, {active: true});
+                const isLoggedIn = await checkLogin(tab.id, {source: data.source});
+
+                if (!isLoggedIn) {
+                    throw {
+                        code: '9004',
+                        message: '로그인 실패. 처음부터 다시 진행해주세요.'
+                    }
+                }
+
+                chrome.tabs.update(originalTab.id!, {active: true});
+            }
+
+            const submitResult =  await Promise.race([sendMessageToTab<any>(tab.id, {
+                type: 'SUBMIT',
+                data,
+            }), waitForTabClose(tab.id)]);
+            
+            if (!submitResult) {
+                throw {
+                    code: '9005',
+                    message: '제출 실패. 처음부터 다시 진행해주세요.'
+                }
+            }
+
+            const result = await Promise.race([waitUntil<keyof typeof MessageType, boolean>(tab.id, {
+                type: 'RESULT',
+                data,
+            }, (result) => result, {
+                timeout: 30000,
+            }), waitForTabClose(tab.id)]);     
+            
+
+            if (!result) {
+                return false;
+            }
+            
+            console.log('제출 페이지')
+
         }
-        
-        console.log('제출 페이지')
+    }catch (error:  any | {code: string, message: string}) {
+        console.log(error);
+        if (error.code) {
+            sendResponse(error);
+        } else {
+            if (error.message.includes('Error: Could not establish connection. Receiving end does not exist.')) {
+                sendResponse({
+                    code: '9998',
+                    message: '탭이 닫혔습니다.'
+                });
+            } else {
+                sendResponse({
+                    code: '9999',
+                    message: '오류가 발생했습니다.'
+                });
+            }
+        }
     }
 });
 

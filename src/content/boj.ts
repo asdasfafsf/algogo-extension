@@ -18,7 +18,7 @@ export const BOJ = {
             languageSelect.dispatchEvent(new Event('chosen:updated'));
             
             // 잠시 대기하여 DOM 업데이트 완료 시간 제공
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
             // 코드 입력
             const textarea = document.getElementById('source');
@@ -40,7 +40,7 @@ export const BOJ = {
             }
             
             // 다시 잠시 대기
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 1500));
             
             // 제출 버튼 클릭
             const submitButton = document.getElementById('submit_button');
@@ -50,17 +50,14 @@ export const BOJ = {
             submitButton.click();
             return true;
         } catch (e) {
-            console.error('코드 제출 중 오류:', e);
             return false;
         }
     },
 
     // 로그인 상태 확인
     checkLoginStatus: (): boolean => {
-        // 로그인 폼의 아이디 입력 필드가 있으면 로그아웃 상태
         const loginInput = document.querySelector('input[name="login_user_id"]');
-        console.log('loginInput', !loginInput);
-        return !loginInput; // 입력 필드가 없으면 로그인된 상태
+        return !loginInput; 
     },
     
 
@@ -69,3 +66,4 @@ export const BOJ = {
         return window.location.href.includes('/status');
     }
 };
+

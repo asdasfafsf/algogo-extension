@@ -2,10 +2,7 @@ import { MessageType } from '../constants/messageTypes';
 import { Message } from '../types/Message';
 import { getContentInstance } from './factory';
 
-console.log('content.ts 의 main함수 밖입니다.')
 function main() {
-
-    console.log('content.ts 실행');
     chrome.runtime.onMessage.addListener(async (message: Message<keyof typeof MessageType>, sender, sendResponse) => {
         if (!message.type) return false;
         
@@ -35,7 +32,6 @@ function main() {
         
         return true; 
     });
-    console.log('content.ts 실행 완료');
 }
 
 main();
