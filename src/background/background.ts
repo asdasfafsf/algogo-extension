@@ -156,6 +156,7 @@ let originalTab: chrome.tabs.Tab | null = null;
 
 // 기존 로직은 그대로 두고
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+    let currentTabId = null;
     try {
         if (message.type === 'EXECUTE') {
             const { source, sourceId, code, language } = message.data;
@@ -190,6 +191,8 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
                     message: '탭이 열리지 않았습니다.'
                 }
             }
+
+            currentTabId = tab.id;
 
             const data = message.data as Submit;
             const isLogin = await Promise.race([sendMessageToTab<boolean>(tab.id, {
@@ -233,12 +236,15 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             
 
             if (!result) {
-                return false;
+                throw {
+                    code: '9005',
+                    message: '제출 실패. 처음부터 다시 진행해주세요.'
+                }
             }
             
-
+            return true;
         }
-    }catch (error:  any | {code: string, message: string}) {
+    } catch (error:  any | {code: string, message: string}) {
         console.log(error);
         if (error.code) {
             sendResponse(error);
@@ -254,6 +260,10 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
                     message: '오류가 발생했습니다.'
                 });
             }
+        }
+    } finally {
+        if (currentTabId) {
+            chrome.tabs.remove(currentTabId);
         }
     }
 });
