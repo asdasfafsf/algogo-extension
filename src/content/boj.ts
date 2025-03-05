@@ -53,14 +53,41 @@ export const BOJ = {
             return false;
         }
     },
+    progress: async () => {
+        const statusCell = document.querySelector('table.table td.result');
+        if (!statusCell) {
+            return null;
+        }
 
+        const statusText = statusCell.textContent?.trim() || '';
+        const isWaiting = statusText.includes('기다리는 중') || 
+                        statusText.includes('채점 중');
+        
+        let progress = 0;
+        const progressMatch = statusText.match(/\((\d+)%\)/);
+        if (progressMatch) {
+            progress = parseInt(progressMatch[1], 10);
+        }
+        
+        const result = {
+            status: statusText,
+            progress: isWaiting ? progress : 100,
+            memory: (document.querySelector('table.table td.memory')?.textContent?.trim() || ''),
+            time: (document.querySelector('table.table td.time')?.textContent?.trim() || ''),
+            code: (document.querySelector('table.table td.result')?.className?.includes('result-ac') 
+                ? 'SUCCESS' 
+                : 'FAIL'),
+            isComplete: !isWaiting
+        };
+        
+        return result;
+    },
     // 로그인 상태 확인
     checkLoginStatus: (): boolean => {
         const loginInput = document.querySelector('input[name="login_user_id"]');
         return !loginInput; 
     },
     
-
     // 결과 페이지 확인
     isResultPage: (): boolean => {
         return window.location.href.includes('/status');
