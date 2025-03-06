@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Popup loaded');
   document.getElementById('testBtn')?.addEventListener('click', async () => {
-    const executeResult = await new Promise((resolve) => {
+    const executeResult = await new Promise<any & {tabId: number}>((resolve) => {
       window.postMessage({
         type: 'EXECUTE',
         data: {
@@ -13,19 +13,21 @@ print(a+b)`,
         }
       }, '*');
 
+      console.log('????');
       window.addEventListener('message', function handler(event) {
+        console.log('event', event);
         window.removeEventListener('message', handler);
         resolve(event.data.data);
       });
     });
 
-    if (executeResult.code === '0000' && executeResult.submissionTabId) {
+    if (executeResult.code === '0000' && executeResult.tabId) {
       while (true) {
         const statusResult = await new Promise((resolve) => {
           window.postMessage({
             type: 'PROGRESS',
             data: { 
-              submissionTabId: executeResult.submissionTabId 
+              tabId: executeResult.tabId 
             }
           }, '*');
 

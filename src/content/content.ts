@@ -35,28 +35,6 @@ function main() {
                 const responseProgress = await chrome.runtime.sendMessage(responseProgressData);
                 sendResponse(responseProgress);
                 break;
-            case 'EXECUTE':
-                const executeTypedMessage = message as Message<typeof MessageType.EXECUTE>;
-                const executeResult = await chrome.runtime.sendMessage(executeTypedMessage);
-                
-                if (executeResult.code === '0000') {
-                    sendResponse({
-                        code: '0000',
-                        message: '제출 성공',
-                        ...executeResult,
-                    });
-                } else {
-                    sendResponse(executeResult);
-                }
-                break;
-             // 백준 페이지에서 동작해야하는 script
-            case 'REQUEST_PROGRESS':
-                const progressTypedMessage = message as Message<typeof MessageType.REQUEST_PROGRESS>;
-                const progressData = progressTypedMessage.data;
-                const progress = await chrome.runtime.sendMessage(progressData);
-                
-                sendResponse(progress)
-                break;
             default:
                 sendResponse({
                     code: '9000',
@@ -66,6 +44,48 @@ function main() {
         }
         
         return true; 
+    });
+
+    window.addEventListener('message', async (event) => {
+        console.log('event야!!!!', event);
+
+        switch (event.data.type) {
+            case 'EXECUTE':
+                const executeTypedMessage = event.data as Message<typeof MessageType.EXECUTE>;
+                const executeResult = await new Promise<any>((resolve, reject) => {
+                    chrome.runtime.sendMessage(executeTypedMessage, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(chrome.runtime.lastError);
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                console.log(`방가방가executeResult: ${executeResult}`);
+                
+                if (executeResult.code === '0000') {
+                    event.source?.postMessage({
+                        type: 'RESPONSE_EXECUTE',
+                        data: executeResult,
+                    });
+                } else {
+                    event.source?.postMessage({
+                        type: 'RESPONSE_EXECUTE',
+                        data: executeResult,
+                    });
+                }
+                break;
+            case 'REQUEST_PROGRESS':
+                const progressTypedMessage = event.data as Message<typeof MessageType.REQUEST_PROGRESS>;
+                const progressData = progressTypedMessage.data;
+                const progress = await chrome.runtime.sendMessage({...progressTypedMessage, type: 'RESPONSE_PROGRESS'});
+                
+                event.source?.postMessage({
+                    type: 'RESPONSE_PROGRESS',
+                    data: progress,
+                });
+                break;
+        }
     });
 }
 

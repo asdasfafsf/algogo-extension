@@ -11,14 +11,16 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://www.acmicpc.net/*"
+    "https://www.acmicpc.net/*",
+    "http://localhost:5173/*",
+    "https://www.algogo.co.kr/*"
   ],
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": ["https://www.acmicpc.net/*"],
+      "matches": ["https://www.acmicpc.net/*", "http://localhost:5173/*", "https://www.algogo.co.kr/*"],
       "js": ["content.js"],
       "run_at": "document_end"
     }
