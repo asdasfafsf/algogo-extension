@@ -19,3 +19,87 @@ export const MessageType = {
     NEW_CONTENT_SCRIPT_TO_BACKGROUND_RESULT: 'NEW_CONTENT_SCRIPT_TO_BACKGROUND_RESULT',
     NEW_CONTENT_SCRIPT_TO_BACKGROUND_CHECK_LOGIN: 'NEW_CONTENT_SCRIPT_TO_BACKGROUND_CHECK_LOGIN',
 } as const;
+
+export const ResponseMessageType = {
+    WEB_TO_CONTENT_SCRIPT_SUBMIT_RESPONSE: 'WEB_TO_CONTENT_SCRIPT_SUBMIT_RESPONSE',
+    WEB_TO_CONTENT_SCRIPT_PROGRESS_RESPONSE: 'WEB_TO_CONTENT_SCRIPT_PROGRESS_RESPONSE',
+    
+    CONTENT_SCRIPT_TO_BACKGROUND_SUBMIT_RESPONSE: 'CONTENT_SCRIPT_TO_BACKGROUND_SUBMIT_RESPONSE',
+    CONTENT_SCRIPT_TO_BACKGROUND_PROGRESS_RESPONSE: 'CONTENT_SCRIPT_TO_BACKGROUND_PROGRESS_RESPONSE',
+
+    BACKGROUND_TO_NEW_CONTENT_SCRIPT_CHECK_LOGIN_RESPONSE: 'BACKGROUND_TO_NEW_CONTENT_SCRIPT_CHECK_LOGIN_RESPONSE',
+    BACKGROUND_TO_NEW_CONTENT_SCRIPT_SUBMIT_RESPONSE: 'BACKGROUND_TO_NEW_CONTENT_SCRIPT_SUBMIT_RESPONSE',
+    BACKGROUND_TO_NEW_CONTENT_SCRIPT_RESULT_RESPONSE: 'BACKGROUND_TO_NEW_CONTENT_SCRIPT_RESULT_RESPONSE',
+    BACKGROUND_TO_NEW_CONTENT_SCRIPT_PROGRESS_RESPONSE: 'BACKGROUND_TO_NEW_CONTENT_SCRIPT_PROGRESS_RESPONSE',
+
+    NEW_CONTENT_SCRIPT_TO_BACKGROUND_SUBMIT_RESPONSE: 'NEW_CONTENT_SCRIPT_TO_BACKGROUND_SUBMIT_RESPONSE',
+    NEW_CONTENT_SCRIPT_TO_BACKGROUND_PROGRESS_RESPONSE: 'NEW_CONTENT_SCRIPT_TO_BACKGROUND_PROGRESS_RESPONSE',
+    NEW_CONTENT_SCRIPT_TO_BACKGROUND_RESULT_RESPONSE: 'NEW_CONTENT_SCRIPT_TO_BACKGROUND_RESULT_RESPONSE',
+    NEW_CONTENT_SCRIPT_TO_BACKGROUND_CHECK_LOGIN_RESPONSE: 'NEW_CONTENT_SCRIPT_TO_BACKGROUND_CHECK_LOGIN_RESPONSE',
+} as const;
+
+
+export const ResponseCode = {
+    SUCCESS: '0000',
+    NOT_SUPPORTED_CODE: '9000',
+    NOT_SUPPORTED_SOURCE: '9001',
+    NOT_OPEN_TAB: '9002',
+    LOGIN_FAILED: '9003',
+    SUBMIT_FAILED: '9004',
+    TIMEOUT: '9997',
+    TAB_CLOSED: '9998',
+    UNKNOWN_ERROR: '9999',
+} as const;
+
+export const ResponseCodeMessage = {
+    [ResponseCode.SUCCESS]: '성공',
+    [ResponseCode.NOT_SUPPORTED_CODE]: '지원하지 않는 코드',
+    [ResponseCode.NOT_SUPPORTED_SOURCE]: '지원하지 않는 소스',
+    [ResponseCode.NOT_OPEN_TAB]: '탭이 열리지 않음',
+    [ResponseCode.LOGIN_FAILED]: '로그인 실패', 
+    [ResponseCode.SUBMIT_FAILED]: '제출 실패',
+    [ResponseCode.TIMEOUT]: '시간 초과',
+    [ResponseCode.TAB_CLOSED]: '탭이 닫힘',
+    [ResponseCode.UNKNOWN_ERROR]: '알 수 없는 오류',
+} as const;
+
+
+export const ResponseCodePair = {
+    [ResponseCode.SUCCESS]: { 
+        code: ResponseCode.SUCCESS, 
+        message: ResponseCodeMessage[ResponseCode.SUCCESS] 
+    },
+    [ResponseCode.NOT_SUPPORTED_CODE]: { 
+        code: ResponseCode.NOT_SUPPORTED_CODE, 
+        message: ResponseCodeMessage[ResponseCode.NOT_SUPPORTED_CODE] 
+    },
+    [ResponseCode.NOT_SUPPORTED_SOURCE]: { 
+        code: ResponseCode.NOT_SUPPORTED_SOURCE, 
+        message: ResponseCodeMessage[ResponseCode.NOT_SUPPORTED_SOURCE] 
+    },
+    [ResponseCode.NOT_OPEN_TAB]: { 
+        code: ResponseCode.NOT_OPEN_TAB, 
+        message: ResponseCodeMessage[ResponseCode.NOT_OPEN_TAB] 
+    },
+    [ResponseCode.LOGIN_FAILED]: { 
+        code: ResponseCode.LOGIN_FAILED, 
+        message: ResponseCodeMessage[ResponseCode.LOGIN_FAILED] 
+    },
+    [ResponseCode.SUBMIT_FAILED]: { 
+        code: ResponseCode.SUBMIT_FAILED, 
+        message: ResponseCodeMessage[ResponseCode.SUBMIT_FAILED] 
+    },
+    [ResponseCode.TIMEOUT]: { 
+        code: ResponseCode.TIMEOUT, 
+        message: ResponseCodeMessage[ResponseCode.TIMEOUT] 
+    },
+    [ResponseCode.TAB_CLOSED]: { 
+        code: ResponseCode.TAB_CLOSED, 
+        message: ResponseCodeMessage[ResponseCode.TAB_CLOSED] 
+    },
+    [ResponseCode.UNKNOWN_ERROR]: { 
+        code: ResponseCode.UNKNOWN_ERROR, 
+        message: ResponseCodeMessage[ResponseCode.UNKNOWN_ERROR] 
+    },
+} as const;
+
