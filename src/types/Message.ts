@@ -39,16 +39,16 @@ export interface ResponseMessageMap {
     [ResponseMessageType.NEW_CONTENT_SCRIPT_TO_BACKGROUND_RESULT_RESPONSE]: {source: Source};
 }   
 
-export type Message<T extends MessageType> = {
-    type: T;
-    data: MessagePayloadMap[T];
+export type Message = {
+    type: MessageType;
+    data: MessagePayloadMap[MessageType];
 }
 
 export type ResponseCodePairValue = typeof ResponseCodePair[keyof typeof ResponseCodePair];
 
 
-export type ResponseMessage<T extends typeof ResponseMessageType[keyof typeof ResponseMessageType]> = {
-    type: T;
-    data: ResponseMessageMap[T];
+export type ResponseMessage = {
+    type: ResponseMessageType;
+    data: ResponseMessageMap[ResponseMessageType];
 } & ResponseCodePairValue;
 

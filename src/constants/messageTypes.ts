@@ -52,15 +52,15 @@ export const ResponseCode = {
 } as const;
 
 export const ResponseCodeMessage = {
-    [ResponseCode.SUCCESS]: '성공',
-    [ResponseCode.NOT_SUPPORTED_CODE]: '지원하지 않는 코드',
-    [ResponseCode.NOT_SUPPORTED_SOURCE]: '지원하지 않는 소스',
-    [ResponseCode.NOT_OPEN_TAB]: '탭이 열리지 않음',
-    [ResponseCode.LOGIN_FAILED]: '로그인 실패', 
-    [ResponseCode.SUBMIT_FAILED]: '제출 실패',
-    [ResponseCode.TIMEOUT]: '시간 초과',
-    [ResponseCode.TAB_CLOSED]: '탭이 닫힘',
-    [ResponseCode.UNKNOWN_ERROR]: '알 수 없는 오류',
+    [ResponseCode.SUCCESS]: '성공적으로 처리되었습니다.',
+    [ResponseCode.NOT_SUPPORTED_CODE]: '지원하지 않는 코드입니다. 다른 언어를 선택해주세요.',
+    [ResponseCode.NOT_SUPPORTED_SOURCE]: '지원하지 않는 문제 출처입니다. 다른 문제를 선택해주세요.',
+    [ResponseCode.NOT_OPEN_TAB]: '새 탭을 열 수 없습니다. 브라우저 설정을 확인해주세요.',
+    [ResponseCode.LOGIN_FAILED]: '로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.',
+    [ResponseCode.SUBMIT_FAILED]: '제출에 실패했습니다. 잠시 후 다시 시도해주세요.',
+    [ResponseCode.TIMEOUT]: '응답 시간이 초과되었습니다. 네트워크 상태를 확인하고 다시 시도해주세요.',
+    [ResponseCode.TAB_CLOSED]: '작업 중인 탭이 닫혔습니다. 다시 시도해주세요.',
+    [ResponseCode.UNKNOWN_ERROR]: '알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
 } as const;
 
 

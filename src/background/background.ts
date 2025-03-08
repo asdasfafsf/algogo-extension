@@ -1,4 +1,4 @@
-import { MessageType } from "../constants/messageTypes";
+import { MessageType, ResponseCode, ResponseCodePair, ResponseMessageType } from "../constants/messageTypes";
 import { Message } from "../types/Message";
 import { getInstance } from "./factory";
 
@@ -69,20 +69,18 @@ const sendMessageToTab = async <R>(
  * @param predicate 결과를 평가하는 함수
  * @param options 대기 옵션
  */
-const waitUntil = async <T extends keyof typeof MessageType, R>(
+const waitUntil = async <R>(
     tabId: number,
-    checkMessage: Message<T>,
+    checkMessage: Message,
     predicate: (response: R) => boolean,
     options: {
         interval?: number;
         timeout?: number;
-        timeoutMessage?: string;
     } = {}
 ): Promise<R> => {
     const {
         interval = 500,
         timeout = 30000,
-        timeoutMessage = '시간 초과'
     } = options;
     
     const startTime = Date.now();
@@ -100,9 +98,8 @@ const waitUntil = async <T extends keyof typeof MessageType, R>(
     }
     
     throw {
-        code: '9997',
-        message: timeoutMessage
-    };
+        ...ResponseCodePair[ResponseCode.TIMEOUT],
+    }
 };
 
 
@@ -130,10 +127,8 @@ const waitForTabClose = async (tabId: number): Promise<never> => {
             if (closedTabId === tabId) {
                 chrome.tabs.onRemoved.removeListener(listener);
                 registeredTabIds.delete(tabId);
-                console.log('??????')
                 reject({
-                    code: '9998',
-                    message: '탭이 닫혔습니다.'
+                    ...ResponseCodePair[ResponseCode.TAB_CLOSED],
                 });
             }
         };
@@ -143,8 +138,8 @@ const waitForTabClose = async (tabId: number): Promise<never> => {
 
 
 const checkLogin = async (tabId: number, data: {source: Source}) => {
-    return await waitUntil<keyof typeof MessageType, boolean>(tabId, {
-        type: 'CHECK_LOGIN',
+    return await waitUntil<boolean>(tabId, {
+        type: MessageType.NEW_CONTENT_SCRIPT_TO_BACKGROUND_CHECK_LOGIN,
         data,
     }, (result) => result, {
         timeout: 30000,
@@ -154,16 +149,16 @@ const checkLogin = async (tabId: number, data: {source: Source}) => {
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     let currentTabId = null;
-    console.log('message', message);
-    if (message.type === 'EXECUTE') {
+    if (message.type === MessageType.CONTENT_SCRIPT_TO_BACKGROUND_SUBMIT) {
         try {
             const { source, sourceId, code, language } = message.data;
             const instance = getInstance(source);
 
+            console.log('message : background', message);
+
             if (!instance) {
                 throw {
-                    code: '9001',
-                    message: '지원하지 않는 소스입니다.'
+                    ...ResponseCodePair[ResponseCode.NOT_SUPPORTED_SOURCE],
                 }
             }
 
@@ -172,8 +167,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
         
             if (!currentTabs?.id) {
                 throw {
-                    code: '9002',
-                    message: '탭이 열리지 않았습니다.'
+                    ...ResponseCodePair[ResponseCode.NOT_OPEN_TAB],
                 }
             }
 
@@ -185,8 +179,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
             if (!tab.id) {
                 throw {
-                    code: '9003',
-                    message: '탭이 열리지 않았습니다.'
+                    ...ResponseCodePair[ResponseCode.NOT_OPEN_TAB],
                 }
             }
 
@@ -194,7 +187,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
             const data = message.data as Submit;
             const isLogin = await Promise.race([sendMessageToTab<boolean>(tab.id, {
-                type: 'CHECK_LOGIN',
+                type: MessageType.BACKGROUND_TO_NEW_CONTENT_SCRIPT_CHECK_LOGIN,
                 data: {source},
             }), waitForTabClose(tab.id)]);
             
@@ -205,8 +198,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
                 if (!isLoggedIn) {
                     throw {
-                        code: '9004',
-                        message: '로그인 실패. 처음부터 다시 진행해주세요.'
+                        ...ResponseCodePair[ResponseCode.LOGIN_FAILED],
                     }
                 }
 
@@ -214,19 +206,18 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
             }
 
             const submitResult =  await Promise.race([sendMessageToTab<any>(tab.id, {
-                type: 'SUBMIT',
+                type: MessageType.BACKGROUND_TO_NEW_CONTENT_SCRIPT_SUBMIT,
                 data,
             }), waitForTabClose(tab.id)]);
             
             if (!submitResult) {
                 throw {
-                    code: '9005',
-                    message: '제출 실패. 처음부터 다시 진행해주세요.'
+                    ...ResponseCodePair[ResponseCode.SUBMIT_FAILED],
                 }
             }
 
-            const result = await Promise.race([waitUntil<keyof typeof MessageType, boolean>(tab.id, {
-                type: 'RESULT',
+            const result = await Promise.race([waitUntil<boolean>(tab.id, {
+                type: MessageType.BACKGROUND_TO_NEW_CONTENT_SCRIPT_RESULT,
                 data,
             }, (result) => result, {
                 timeout: 30000,
@@ -235,31 +226,28 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
             if (!result) {
                 throw {
-                    code: '9005',
-                    message: '제출 실패. 처음부터 다시 진행해주세요.'
+                    ...ResponseCodePair[ResponseCode.SUBMIT_FAILED],
                 }
             }
 
             sendResponse({
-                code: '0000',
-                message: '제출 성공',
-                tabId: tab.id,
+                type: ResponseMessageType.BACKGROUND_TO_NEW_CONTENT_SCRIPT_SUBMIT_RESPONSE,
+                ...ResponseCodePair[ResponseCode.SUCCESS],
+                data: { tabId: tab.id },
             });
             
-            return true;
+            return false;
         } catch (error:  any | {code: string, message: string}) {
             if (error.code) {
                 sendResponse(error);
             } else {
                 if (error.message.includes('Error: Could not establish connection. Receiving end does not exist.')) {
                     sendResponse({
-                        code: '9998',
-                        message: '탭이 닫혔습니다.'
+                        ...ResponseCodePair[ResponseCode.TAB_CLOSED],
                     });
                 } else {
                     sendResponse({
-                        code: '9999',
-                        message: '오류가 발생했습니다.'
+                        ...ResponseCodePair[ResponseCode.UNKNOWN_ERROR],
                     });
                 }
             }
@@ -267,23 +255,23 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
                 chrome.tabs.remove(currentTabId);
             }
 
-            return true;
+            return false;
         } finally {
 
         }
-    } else if (message.type === 'REQUEST_PROGRESS') {
+    } else if (message.type === MessageType.CONTENT_SCRIPT_TO_BACKGROUND_PROGRESS) {
         const data = message.data as {tabId: number, source: Source};
-        const progress = await waitUntil<keyof typeof MessageType, boolean>(data.tabId, {
-            type: 'RESPONSE_PROGRESS',
+        const progress = await waitUntil<boolean>(data.tabId, {
+            type: MessageType.BACKGROUND_TO_NEW_CONTENT_SCRIPT_PROGRESS,
             data,
         }, (result) => result, {
             timeout: 30000,
         });
 
         sendResponse(progress);
-        return true;
+        return false;
     }
 
-    return true;
+    return false;
 });
 
