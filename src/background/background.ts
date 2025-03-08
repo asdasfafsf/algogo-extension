@@ -71,7 +71,7 @@ const sendMessageToTab = async <R>(
  */
 const waitUntil = async <R>(
     tabId: number,
-    checkMessage: Message,
+    checkMessage: Message<typeof MessageType[keyof typeof MessageType]>,
     predicate: (response: R) => boolean,
     options: {
         interval?: number;

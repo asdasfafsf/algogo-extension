@@ -3,34 +3,34 @@ import { Message } from '../types/Message';
 import { getContentInstance } from './factory';
 
 function main() {
-    chrome.runtime.onMessage.addListener(async (message: Message, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener(async (message: Message<typeof MessageType[keyof typeof MessageType]>, sender, sendResponse) => {
         if (!message.type) return false;
         
         switch (message.type) {
             // 백준 페이지에서 동작해야하는 script
             case MessageType.BACKGROUND_TO_NEW_CONTENT_SCRIPT_CHECK_LOGIN:
-                const loginTypedMessage = message as Message;
+                const loginTypedMessage = message as Message<typeof MessageType.BACKGROUND_TO_NEW_CONTENT_SCRIPT_CHECK_LOGIN>;
                 const loginData = loginTypedMessage.data;
                 const loginContentInstance = getContentInstance(loginData.source);
                 const isLogin = loginContentInstance.checkLoginStatus();
                 sendResponse(isLogin);
                 break;
             case MessageType.BACKGROUND_TO_NEW_CONTENT_SCRIPT_SUBMIT:
-                const typedMessage = message as Message;
+                const typedMessage = message as Message<typeof MessageType.BACKGROUND_TO_NEW_CONTENT_SCRIPT_SUBMIT>;
                 const data = typedMessage.data;
                 const contentInstance = getContentInstance(data.source);
                 const isSubmit = contentInstance.submit(data);
                 sendResponse(isSubmit);
                 break;
             case MessageType.BACKGROUND_TO_NEW_CONTENT_SCRIPT_RESULT:
-                const resultTypedMessage = message as Message;
+                const resultTypedMessage = message as Message<typeof MessageType.BACKGROUND_TO_NEW_CONTENT_SCRIPT_RESULT>;
                 const resultData = resultTypedMessage.data;
                 const resultContentInstance = getContentInstance(resultData.source);
                 const isResult = resultContentInstance.isResultPage();
                 sendResponse(isResult);
                 break;
             case MessageType.BACKGROUND_TO_NEW_CONTENT_SCRIPT_PROGRESS:
-                const responseProgressTypedMessage = message as Message;
+                const responseProgressTypedMessage = message as Message<typeof MessageType.BACKGROUND_TO_NEW_CONTENT_SCRIPT_PROGRESS>;
                 const responseProgressData = responseProgressTypedMessage.data;
                 const responseProgress = await chrome.runtime.sendMessage(responseProgressData);
                 sendResponse(responseProgress);
@@ -50,7 +50,7 @@ function main() {
         switch (event.data.type) {
             case MessageType.WEB_TO_CONTENT_SCRIPT_SUBMIT:
                 try {
-                    const executeTypedMessage = event.data as Message;
+                    const executeTypedMessage = event.data as Message<typeof MessageType.WEB_TO_CONTENT_SCRIPT_SUBMIT>;
                     const executeResult = await new Promise<any>((resolve, reject) => {
                         chrome.runtime.sendMessage({...executeTypedMessage, type: MessageType.CONTENT_SCRIPT_TO_BACKGROUND_SUBMIT}, (response) => {
                             if (chrome.runtime.lastError) {
@@ -84,7 +84,7 @@ function main() {
                 break;
             case MessageType.WEB_TO_CONTENT_SCRIPT_PROGRESS:
                 try {
-                    const progressTypedMessage = event.data as Message;
+                    const progressTypedMessage = event.data as Message<typeof MessageType.WEB_TO_CONTENT_SCRIPT_PROGRESS>;
                     const progressData = progressTypedMessage.data;
                     const progress = await new Promise((resolve, reject) => {
                         chrome.runtime.sendMessage(
