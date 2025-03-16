@@ -63,4 +63,7 @@ export default {
       ],
     }),
   ],
+  
+  // 파일 시스템 캐싱 비활성화
+  cache: false,
 };
