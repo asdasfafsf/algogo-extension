@@ -38,7 +38,7 @@ print(a+b)`,
         });
 
         console.log('채점 상태:', statusResult);
-        if (statusResult.isComplete) break;
+        if ((statusResult as any).isComplete) break;
         await new Promise(resolve => setTimeout(resolve, 500));
       }
     }

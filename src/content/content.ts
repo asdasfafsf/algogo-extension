@@ -47,6 +47,8 @@ function main() {
     });
 
     window.addEventListener('message', async (event) => {
+        console.log(`방가방가event: ${event}`);
+        console.log(event.data);
         switch (event.data.type) {
             case MessageType.WEB_TO_CONTENT_SCRIPT_SUBMIT:
                 try {
@@ -61,6 +63,7 @@ function main() {
                         });
                     });
                     console.log(`방가방가executeResult: ${executeResult}`);
+                    console.log(executeResult);
                     
                     if (executeResult.code === '0000') {
                         event.source?.postMessage({
