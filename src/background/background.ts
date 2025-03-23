@@ -104,7 +104,7 @@ const waitUntil = async <R>(
 
 
 // 이미 리스너가 등록된 탭 ID 집합
-const registeredTabIds = new Set<number>();
+const registeredTabIds = new Map<number, Promise<never>>();
 
 /**
  * 탭 닫힘을 감지하는 함수 (중복 등록 방지)
@@ -113,16 +113,10 @@ const registeredTabIds = new Set<number>();
 const waitForTabClose = async (tabId: number): Promise<never> => {
     // 이미 등록된 탭이면 기존 Promise 재사용
     if (registeredTabIds.has(tabId)) {
-        return new Promise<never>((_, reject) => {
-            // 이미 리스너가 등록되어 있으므로 새로운 Promise만 반환
-            // 탭이 닫히면 기존 리스너에 의해 reject될 것임
-        });
+       return registeredTabIds.get(tabId)!;
     }
-    
-    // 새로운 탭이면 리스너 등록
-    registeredTabIds.add(tabId);
-    
-    return new Promise<never>((_, reject) => {
+
+    const tabPromise = new Promise<never>((_, reject) => {
         const listener = (closedTabId: number) => {
             if (closedTabId === tabId) {
                 chrome.tabs.onRemoved.removeListener(listener);
@@ -134,6 +128,12 @@ const waitForTabClose = async (tabId: number): Promise<never> => {
         };
         chrome.tabs.onRemoved.addListener(listener);
     });
+
+        
+    // 새로운 탭이면 리스너 등록
+    registeredTabIds.set(tabId, tabPromise);
+    return tabPromise;
+    
 };
 
 
