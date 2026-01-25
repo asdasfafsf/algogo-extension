@@ -1,0 +1,1 @@
+- AGENTS.md for src/content will focus on DOM manipulation patterns and BOJ-specific logic.

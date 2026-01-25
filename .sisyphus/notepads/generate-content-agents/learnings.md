@@ -1,0 +1,3 @@
+- src/content/boj.ts uses hardcoded timeouts (2000ms, 1500ms) for DOM synchronization.
+- CodeMirror manipulation is used for code injection on BOJ.
+- Language selection requires manual `dispatchEvent` for dropdown updates.

@@ -1,1 +1,0 @@
-type Source = 'BOJ'
