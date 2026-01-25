@@ -14,10 +14,9 @@ export default {
   
   // 진입점 설정
   entry: {
-    background: './src/background/background.ts',
-    content: './src/content/content.ts',
-    // 팝업이 있다면 추가
-    // popup: './src/popup/popup.ts',
+    background: './src/background/index.ts',
+    content: './src/content/index.ts',
+    popup: './src/popup/index.ts',
   },
   
   // 출력 설정
